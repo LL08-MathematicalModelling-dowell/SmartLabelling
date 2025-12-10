@@ -1,26 +1,20 @@
-FROM node:18-alpine
+# FROM node:latest
+FROM node:20-alpine
 
-WORKDIR /app
+# Set the working directory in the container
+WORKDIR /usr/src/app
 
-# Copy package files
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm install
 
-# Copy source code
-COPY src/ ./src/
-COPY tsconfig.json ./
+# Copy the rest of the code
+COPY . .
 
-# Build TypeScript (if needed)
-RUN npm run build || echo "No build script"
-
-# Expose port
-EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if(r.statusCode!=200)throw new Error()})" || exit 1
+# Expose the port the app runs on
+EXPOSE 5000
 
 # Start the application
-CMD ["node", "src/server.js"]
+CMD ["npm", "run", "dev"]
