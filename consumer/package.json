@@ -1,0 +1,17 @@
+{
+  "name": "consumer",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node src/consumer.js",
+    "dev": "nodemon src/consumer.js"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.0",
+    "axios": "^1.4.0",
+    "redis": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
