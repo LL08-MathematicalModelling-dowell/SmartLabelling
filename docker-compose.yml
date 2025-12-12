@@ -42,10 +42,9 @@ services:
     env_file: 
       - path: ./.env
     environment:
-      - NODE_ENV=production
-      - KAFKA_BROKER=kafka:29092
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      PORT: ${PORT}
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+      KAFKA_BROKER: ${KAFKA_BROKER}
     depends_on:
       - kafka
       - redis
@@ -59,7 +58,7 @@ services:
     environment:
       - NODE_ENV=production
       - KAFKA_BROKER=kafka:29092
-      - BACKEND_API_URL=http://backend:3000/api
+      - BACKEND_API_URL=http://backend:5000/api
       - REDIS_URL=redis://redis:6379
     env_file: 
       - path: ./.env
@@ -100,7 +99,7 @@ services:
       - "8080:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
     depends_on:
       - kafka
     networks:

@@ -36,7 +36,7 @@ export async function createSchool(req, res) {
     try {
             await sendtoKafka(school);
         
-        res.status(200).json({ success: true, count: school.length, url: url });
+        res.status(200).json({ success: true, count: school.length});
     } catch (err) {
         console.error("❌ Failed to send school to Kafka", err);
         res.status(500).json({ error: "Failed to send school" });
