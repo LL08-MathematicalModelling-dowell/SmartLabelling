@@ -1,12 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import routes from './src/routes/index.js';
-import { connectToDb } from './src/config/db.config.js';
-import config from './src/config/index.js';
-import { saveMongoDbWorker, updateDatacubeWorker, saveStatsWorker, updateChildQrCodeActivationStatusWorker } from './src/config/workers.config.js';
-import { initKafka } from "./src/services/kafka.services.js";
-import { errorHandler } from "./src/middleware/errorHandler.js";
+import routes from './routes/index.js';
+import { errorHandler } from "./middleware/errorHandler.js";
+import config from './config/index.js';
 const app = express();
 
 const allowedOrigins = [
@@ -50,3 +47,9 @@ app.get('/health', (req, res) => {
         message: 'API services are running fine'
     });
 })
+
+const onListening = () => {
+    console.log(`Listening on port ${config.PORT}`);
+};
+
+app.listen(config.PORT, onListening);

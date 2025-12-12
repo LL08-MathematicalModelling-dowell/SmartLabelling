@@ -1,3 +1,22 @@
+// import { sendtoKafka } from '../utils/kafkaUtil.js'
+import { v4 as uuidv4 } from "uuid";
+import kafka from '../services/kafkaService.js';
+
+async function sendtoKafka(data) {
+    const producer = kafka.producer();
+    await producer.connect();
+    await producer.send({
+            topic: process.env.KAFKA_TOPIC,
+            messages: [{
+                "key": uuidv4(),
+                // "value": JSON.stringify({"name":"Exhibitor1","scans":"scans"})
+                "value": JSON.stringify(data)
+            }],
+               
+        });
+
+}
+
 export async function createSchool(req, res) {
     console.log("This is the body:", req.body)
     const domainName = req.body.domainName;
@@ -12,16 +31,15 @@ export async function createSchool(req, res) {
             default: defaultURL
         }
     };
-    console.log(`This is the exhibitor:${exhibitor}, type:${typeof exhibitor}`)
-    // exhibitor.dataType = "exhibitor";
+    console.log(`This is the school:${school}`)
     console.log("This is the topic:",process.env.KAFKA_TOPIC)
     try {
-            await sendtoKafka(exhibitor);
+            await sendtoKafka(school);
         
-        res.status(200).json({ success: true, count: exhibitor.length, url: url });
+        res.status(200).json({ success: true, count: school.length, url: url });
     } catch (err) {
-        console.error("❌ Failed to send exhibitor to Kafka", err);
-        res.status(500).json({ error: "Failed to send exhibitor" });
+        console.error("❌ Failed to send school to Kafka", err);
+        res.status(500).json({ error: "Failed to send school" });
     }
 }
 
