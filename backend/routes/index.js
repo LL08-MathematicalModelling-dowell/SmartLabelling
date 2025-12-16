@@ -8,6 +8,7 @@ const router = Router()
 
 router.use("/healthcheck", healtcheckRoutes)
 router.use("/super-admin", superAdmin)
+router.use("/admin", admin)
 // router.use("/scanner", scanner)
 
 export default router

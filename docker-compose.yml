@@ -56,10 +56,9 @@ services:
   consumer:
     build: ./consumer
     environment:
-      - NODE_ENV=production
-      - KAFKA_BROKER=kafka:29092
-      - BACKEND_API_URL=http://backend:5000/api
-      - REDIS_URL=redis://redis:6379
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      BACKEND_API_URL: ${BACKEND_API_URL}
+      # - REDIS_URL=redis://redis:6379
     env_file: 
       - path: ./.env
     depends_on:

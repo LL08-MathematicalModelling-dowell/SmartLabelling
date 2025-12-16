@@ -118,25 +118,15 @@ class Datacubeservices {
         }
     }
 
-    async collectionRetrieval(databaseName) {
-        const url = `${this.baseUrl}/collections/`;
-        const payload = {
-            api_key: this.apiKey,
-            db_name: databaseName,
-            payment: false
-        };
-    
+   
+    async collectionRetrieval(databaseId) {
+        const url = `${this.baseUrl}/list_collections/?database_id=${databaseId}`;
+        
         try {
-            const response = await axios({
-                method: 'get',
-                url: url,
-                data: payload,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await axios.get(url,{headers: this.headers});
             return response.data;
         } catch (error) {
+            console.log(error);
             return {
                 success: false,
                 message: "Error retrieving collections",
@@ -144,7 +134,7 @@ class Datacubeservices {
             };
         }
     }
-    
+
 
     async dataDelete(databaseName, collectionName, query) {
         const url = `${this.baseUrl}/crud/`;

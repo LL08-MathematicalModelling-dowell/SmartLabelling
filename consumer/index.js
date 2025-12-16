@@ -2,6 +2,7 @@ import kafka from './kafka-client.js';
 import 'dotenv/config';
 import Datacubeservices from './datacube.services.js';
 import { v4 as uuidv4 } from 'uuid';
+import { insertSchoolData, createScannerType } from './helper.js';
 
 // Environment variables from Docker Compose
 const topic = process.env.KAFKA_TOPIC;
@@ -25,54 +26,21 @@ const run = async () => {
         eachMessage: async ({ topic, partition, message }) => {
             try {
                 const data = JSON.parse(message.value.toString());
+                
                 console.log(`Received message from partition ${partition}:`, data);
-                if (data.dataType == 'exhibitor') {
-                    console.log("School has been created")
-                    // const collections =[{
-                    //             name: data.name+"_"+data.exhibitorId,
-                    //             fields: [ 
-                    //                 {"name":"data","type":"string"},
-                    //                 {"name":"timestamp","type":"string"}
-                    //             ]
-                    //     }]
-                    // const response  = await datacube.createCollection(process.env.DATABASE_ID,collections)
-                    // if (response.success) {
-                    //     delete data.dataType;
-                    //     const res = await datacube.dataInsertion(process.env.DATABASE_ID, exhibitorCollection, data);
-                    //     const tokenRes = await datacube.dataInsertion(process.env.DATABASE_ID, tokenCollectionName, tokenData);
-                    //     console.log("This is the exhibitor insertion response",res);
-                    //     data.datacube_success = true; 
-                    //     console.log('Collection created successfully in datacube:', response.message);
-                    // } else {
-                    //     data.datacube_success = false;
-                    //     console.error('Error creating collection:', response.error);
-                    // }
-                }else{
-                    console.log("Inside the else statement")
-                    // for (let i = 0; i < data.length; i++) {
-                    //     console.log(data[i]);
-                    //     delete data[i].tokenId
-                    //     data[i].timestamp = new Date().toISOString();
-                    //     const response = await datacube.dataInsertion(process.env.DATABASE_ID, collectionName, data[i]);
-                    //     if (response.success) {
-                    //         data[i].datacube_success = true; 
-                    //         console.log('Scan inserted successfully in datacube:', response.message);
-                    //     } else {
-                    //         data[i].datacube_success = false;
-                    //         console.error('Error inserting scan:', response.error);
-                    //     }
-                    // }
+                if (data.dataType == 'newSchoolData') {
+                   const res = await insertSchoolData(data);
+                   console.log("This is the school insertion response",res);
                     
-                }
-                const documentToInsert = {
-                    ...data,
-                    processedAt: new Date(),
-                    kafkaMetadata: {
-                        topic,
-                        partition,
-                        offset: message.offset.toString(), // Store offset as string for compatibility
+                }else if (data.dataType == 'newScannerType') {
+                    console.log("Inside the else statement")
+                    let payload = {
+                        scannerType: data.scannerType,
+                        schoolId: data.schoolId
                     }
-                };
+                    const res = await createScannerType(payload);
+                    console.log("This is the scanner insertion response",res);
+                }
 
             } catch (err) {
                 console.error('Error processing message:', err);

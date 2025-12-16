@@ -19,14 +19,15 @@ async function sendtoKafka(data) {
 
 export async function createSchool(req, res) {
     console.log("This is the body:", req.body)
-    const domainName = req.body.domainName;
-    delete req.body.domainName;
+    const domainName = req.body.data.domainName;
+    delete req.body.data.domainName;
     const adminId = uuidv4();
     const schoolId = uuidv4();
-    const defaultURL = `${domainName}/dowellSmartLabelling/admin/?token=${adminId}`
+    const defaultURL = `${domainName}/dowellSmartLabelling/admin/?token=${schoolId}`
 
     let school = { ...req.body, 
         schoolId: schoolId,
+        dataType: "newSchoolData",
         urls: {
             default: defaultURL
         }
