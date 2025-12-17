@@ -72,8 +72,6 @@ const getSchoolInfo = async (data) => {
     );
     if (response.success) {
         let results = {}
-        console.log(`fields: ${data.fields}, type: ${typeof data.fields}`);
-        
         data.fields.forEach(element => {
             results[element] = response.data[0][element]
         });

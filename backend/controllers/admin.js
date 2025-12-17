@@ -1,8 +1,10 @@
 import kafka from '../services/kafkaService.js';
+import Datacubeservices from '../services/datacubeServices.js';
 import { v4 as uuidv4 } from "uuid";
 // import { sendtoKafka } from '../utils/kafkaUtil.js'
 import { getSchoolInfo } from '../utils/dbUtils.js';
 
+const datacube = new Datacubeservices(process.env.DATACUBE_API_KEY);
 async function sendtoKafka(data) {
     const producer = kafka.producer();
     await producer.connect();
@@ -38,16 +40,17 @@ export async function createScannerType(req, res) {
 
 export async function getScannerTypes(req, res) {
     const dbName = await getSchoolInfo({schoolId: req.body.schoolId, fields: ["db_name"]});
+    console.log("This is the db name:", dbName);
     
     try {
        
-        const results = await datacube.collectionRetrieval(dbName)
+        const results = await datacube.collectionRetrieval(dbName.db_name)
         if (results.success){
             let scannerTypes = []
             results.collections.forEach(element => {
                 scannerTypes.push(element.name)
             })
-            res.status(200).json({ success: true, data: scannerTypes});
+            res.status(200).json({ success: true, message: "Retrieved scanner types successfully", available_types: scannerTypes});
         }else {
             console.error("❌ Failed to get scannerTypes 404");
             res.status(404).json({ error: "ScannerTypes not found" });

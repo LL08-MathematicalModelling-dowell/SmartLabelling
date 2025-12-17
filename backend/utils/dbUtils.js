@@ -12,8 +12,9 @@ export const getSchoolInfo = async (data) => {
     if (response.success) {
         let results = {}
         data.fields.forEach(element => {
-            results[element] = response.data.element
+            results[element] = response.data[0][element]
         });
+        console.log(`Results: , ${results}, Fields: ${data.fields}`);
         console.log('Data retrieved successfully from datacube:', response.message);
         return results;
         
