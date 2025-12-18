@@ -113,4 +113,102 @@ const createScannerType = async (data) => {
     }
 }
 
-export { JWTDecode, insertSchoolData, createScannerType };
+const createScanner = async (data) => {
+    let dbData = await getSchoolInfo({schoolId: data.schoolId, fields: ["db_name"]});
+    const dbName = dbData.db_name
+    const scannerType = data.scannerType
+    delete data.scannerType
+    delete data.schoolId
+    const response = await datacube.dataInsertion(dbName, scannerType, data);
+    if (response.success) {
+        console.log('Data inserted successfully in datacube:', response.message);
+        return response 
+    } else {
+        console.error('Error inserting data:', response.error);
+        return response
+    }
+}
+
+function generateDates(year, month = null) {
+  const dates = [];
+
+  // Helper to format date as DD-MM-YYYY
+  function formatDate(date) {
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+
+  // If month is provided (1–12)
+  if (month !== null) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      dates.push(formatDate(d));
+    }
+  } 
+  // If only year is provided
+  else {
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      dates.push(formatDate(d));
+    }
+  }
+
+  return dates;
+}
+
+const createStudent = async (data) => {
+    console.log("This is the data (helper.js):", data);
+    const dbName = data.studentId + "_" + data.schoolId;
+    const collections = []
+
+    const fields = [
+                {"name":"timestamp","type":"string"},
+                {"name":"location","type":"string"}
+            ]
+    // const collectionNames = generateDates(new Date().getFullYear(), new Date().getMonth() + 1); 
+    const collectionNames = generateDates(data.year);
+    // console.log("This is the collection names:", collectionNames);
+    
+    for (let i = 0; i < collectionNames.length; i++) {
+        console.log(`Adding collection ${i} of ${collectionNames.length} to list`);
+        collections.push({
+            name: collectionNames[i],
+            fields: fields
+        })
+    }
+    // console.log("This is the collections:", collections);
+
+    const response = await datacube.dbCreation(dbName, collections);
+
+    if (response.success) {
+        console.log("Student database created successfully in datacube:", response.message);
+        const db_name = response.database.id
+        data.db_name = db_name
+        delete data.dataType;
+
+        let dbData = await getSchoolInfo({schoolId: data.schoolId, fields: ["db_name"]});
+        const dbID = dbData.db_name
+        delete data.schoolId
+
+        const res = await datacube.dataInsertion(dbID, "students", data);
+        if (res.success) {
+           console.log('Student data inserted successfully in datacube:', res.message);
+           return res 
+        } else {
+            console.error('Error inserting student data:', res.error);
+            return res
+        }
+    } else {
+        console.error('Error creating student database:', response.error);
+        return response
+    }
+
+}
+
+export { JWTDecode, insertSchoolData, createScannerType, createScanner, createStudent };

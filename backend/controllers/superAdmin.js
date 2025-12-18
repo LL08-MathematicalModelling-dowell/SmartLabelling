@@ -24,20 +24,28 @@ export async function createSchool(req, res) {
     const adminId = uuidv4();
     const schoolId = uuidv4();
     const defaultURL = `${domainName}/dowellSmartLabelling/admin/?token=${schoolId}`
+    const scannerURL = `${domainName}/dowellSmartLabelling/scanner/?token=${schoolId}`
 
     let school = { ...req.body, 
         schoolId: schoolId,
         dataType: "newSchoolData",
         urls: {
             default: defaultURL
-        }
+        },
+        scannerLink: scannerURL
     };
     console.log(`This is the school:${school}`)
     console.log("This is the topic:",process.env.KAFKA_TOPIC)
     try {
             await sendtoKafka(school);
+            console.log(`Scanner Link: ${scannerURL}`);
         
-        res.status(200).json({ success: true, count: school.length});
+        res.status(200).json({ 
+            success: true, 
+            message: "School created successfully",
+            scannerURL: scannerURL,
+            adminURL: defaultURL
+        });
     } catch (err) {
         console.error("❌ Failed to send school to Kafka", err);
         res.status(500).json({ error: "Failed to send school" });

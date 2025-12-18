@@ -1,12 +1,8 @@
-// import { Router } from "express";
-// import { batchScans, createExhibitor, getExhibitors, validateToken } from "../controllers/scan.controller.js";
-// import { validateScans } from "../middleware/validateScans.js";
+import { Router } from "express";
+import { sendScans} from "../controllers/scan.js";
 
-// const router = Router();
+const router = Router();
 
-// router.post("/batch", validateScans, batchScans);
-// router.post("/exhibitor", createExhibitor);
-// router.get("/exhibitors", getExhibitors);
-// router.post("/validate-token", validateToken);
+router.post("/scans", sendScans);
 
-// export default router;
+export default router;

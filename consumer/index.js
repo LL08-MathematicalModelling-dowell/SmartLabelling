@@ -2,7 +2,7 @@ import kafka from './kafka-client.js';
 import 'dotenv/config';
 import Datacubeservices from './datacube.services.js';
 import { v4 as uuidv4 } from 'uuid';
-import { insertSchoolData, createScannerType } from './helper.js';
+import { insertSchoolData, createScannerType, createScanner, createStudent } from './helper.js';
 
 // Environment variables from Docker Compose
 const topic = process.env.KAFKA_TOPIC;
@@ -40,7 +40,23 @@ const run = async () => {
                     }
                     const res = await createScannerType(payload);
                     console.log("This is the scanner insertion response",res);
+                }else if (data.dataType == 'newScanner') {
+                    console.log("Inside the 2nd else statement")
+                    delete data.dataType
+                  
+                    const res = await createScanner(data);
+                    console.log("This is the scanner insertion response",res);
+                }else if (data.dataType == 'newStudent') {
+                    console.log("Inside the 3rd else statement")
+                    const res = await createStudent(data);
+                    console.log("This is the student creation response",res);
                 }
+                // else if (dataType == 'newScanData') {
+                //     console.log("Inside the 4th else statement")
+                //     const res = await sendScans(data);
+                //     console.log("This is the scan insertion response",res);
+                // }
+
 
             } catch (err) {
                 console.error('Error processing message:', err);
