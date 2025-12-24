@@ -20,7 +20,8 @@ function cleanString(str) {
 }
 
 const insertSchoolData =  async (data) => {
-    const dbName = cleanString(data.data.schoolName) + "_" + data.schoolId;
+    const dbName = data.schoolId;
+    console.log("Database name (insertSchoolData):", dbName, dbName.length);
     const collections = [
         {
             name: "students",
@@ -176,7 +177,7 @@ const createStudent = async (data) => {
     // console.log("This is the collection names:", collectionNames);
     
     for (let i = 0; i < collectionNames.length; i++) {
-        console.log(`Adding collection ${i} of ${collectionNames.length} to list`);
+        // console.log(`Adding collection ${i} of ${collectionNames.length} to list`);
         collections.push({
             name: collectionNames[i],
             fields: fields
@@ -185,6 +186,7 @@ const createStudent = async (data) => {
     // console.log("This is the collections:", collections);
 
     const response = await datacube.dbCreation(dbName, collections);
+    console.log("RESPONSE FOR STUDENT DB CREATION:", response);
 
     if (response.success) {
         console.log("Student database created successfully in datacube:", response.message);
@@ -194,6 +196,7 @@ const createStudent = async (data) => {
 
         let dbData = await getSchoolInfo({schoolId: data.schoolId, fields: ["db_name"]});
         const dbID = dbData.db_name
+        console.log("THIS IS THE DATA:", dbData);
         delete data.schoolId
 
         const res = await datacube.dataInsertion(dbID, "students", data);
@@ -208,6 +211,57 @@ const createStudent = async (data) => {
         console.error('Error creating student database:', response.error);
         return response
     }
+
+}
+
+const getStudentInfo = async (data) => {
+    const response = await datacube.dataRetrieval(
+        process.env.MASTER_DATABASE_ID, 
+        process.env.MASTER_COLL_NAME, 
+        JSON.stringify({
+            "schoolId": data.schoolId
+        })
+    );
+    if (response.success) {
+        let results = {}
+        data.fields.forEach(element => {
+            results[element] = response.data[0][element]
+        });
+       
+        console.log('Results: ', results);
+        console.log('Data retrieved successfully from datacube:', response);
+        return results;
+        
+    } else {
+        console.error('Error retrieving school info:', response.error);
+        return response
+    }
+}
+
+const saveQRCode = async (data) => {
+    dbID = data.databaseID
+    studentId = data.studentId
+    // const coll = [
+    //     {
+    //     "name": str(studentId),
+    //     "fields":[
+    //         {"name":"studentName","type":"string"}, 
+    //         {"name":"year","type":"string"},
+    //         {"name":"db_name","type":"string"},
+    //         {"name":"qrCode","type":"string"}
+    //     ]
+    // }]
+    const response = await datacube.dataInsertion(dbID, studentId, data);
+    if (response.success) {
+        console.log('Data inserted successfully in datacube:', response.message);
+        return response 
+    } else {
+        console.error('Error inserting data:', response.error);
+        return response
+    }
+}
+
+const sendScans = async (data) =>{
 
 }
 

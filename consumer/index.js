@@ -51,11 +51,11 @@ const run = async () => {
                     const res = await createStudent(data);
                     console.log("This is the student creation response",res);
                 }
-                // else if (dataType == 'newScanData') {
-                //     console.log("Inside the 4th else statement")
-                //     const res = await sendScans(data);
-                //     console.log("This is the scan insertion response",res);
-                // }
+                else if (data.dataType == 'newQRCode') {
+                    console.log("Inside the 4th else statement")
+                    const res = await saveQRCode(data);
+                    console.log("This is the QR link:",data.qr_link);
+                }
 
 
             } catch (err) {
