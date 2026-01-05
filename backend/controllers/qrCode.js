@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 // import { sendtoKafka } from '../utils/kafkaUtil.js'
 import { getSchoolInfo } from '../utils/dbUtils.js';
 import QRCodeGenerator from '../services/qrcodeService.js';
+import { timeStamp } from 'console';
 
 async function sendtoKafka(data) {
     const producer = kafka.producer();
@@ -52,6 +53,7 @@ export async function generateQRCode(req, res) {
           image: buffer,
           contentType: contentType
         },
+        timeStamp: new Date().toISOString(),
         dataType: "newQRCode"
       };
     } else {
@@ -77,6 +79,7 @@ export async function generateQRCode(req, res) {
           image: buffer,
           contentType: contentType
         },
+        createdAt: new Date().toISOString(),
         dataType: "newQRCode"
       };
     }
