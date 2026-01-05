@@ -2,7 +2,7 @@ import kafka from './kafka-client.js';
 import 'dotenv/config';
 import Datacubeservices from './datacube.services.js';
 import { v4 as uuidv4 } from 'uuid';
-import { insertSchoolData, createScannerType, createScanner, createStudent } from './helper.js';
+import { insertSchoolData, createScannerType, createScanner, createStudent, saveQRCode } from './helper.js';
 
 // Environment variables from Docker Compose
 const topic = process.env.KAFKA_TOPIC;
@@ -53,8 +53,10 @@ const run = async () => {
                 }
                 else if (data.dataType == 'newQRCode') {
                     console.log("Inside the 4th else statement")
+                    
                     const res = await saveQRCode(data);
-                    console.log("This is the QR link:",data.qr_link);
+                    console.log("This is the QR link:",data.qrCode);
+                    
                 }
 
 

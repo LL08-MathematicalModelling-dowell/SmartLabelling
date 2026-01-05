@@ -1,5 +1,5 @@
 import kafka from '../services/kafkaService.js';
-import Datacubeservices from '../services/datacubeServices.js';
+// import Datacubeservices from '../services/datacubeServices.js';
 import { v4 as uuidv4 } from "uuid";
 // import { sendtoKafka } from '../utils/kafkaUtil.js'
 import { getSchoolInfo } from '../utils/dbUtils.js';
@@ -12,7 +12,6 @@ async function sendtoKafka(data) {
             topic: process.env.KAFKA_TOPIC,
             messages: [{
                 "key": uuidv4(),
-                // "value": JSON.stringify({"name":"Exhibitor1","scans":"scans"})
                 "value": JSON.stringify(data)
             }],
                
@@ -21,39 +20,76 @@ async function sendtoKafka(data) {
 }
 export async function generateQRCode(req, res) {
   try {
-    const { schoolId, databaseId, domainName } = req.body;
+    let qrGenerator, dataUrl, buffer, contentType, url, qrDoc;
+   
+    const schoolId = req.body.schoolId;
+    const databaseId = req.body.databaseId;
+    const domainName = req.body.domainName;
 
-    const qrGenerator = new QRCodeGenerator({
-      baseUrl: `${domainName}/studentFeeback/`,
-      schoolId,
-      databaseId,
-      studentId
-    });
+    if (req.body.studentId) {
+      const studentId = req.body.studentId;
+      qrGenerator = new QRCodeGenerator({
+        baseUrl: `${domainName}/studentFeeback/`,
+        schoolId,
+        databaseId,
+        studentId
+      });
 
-    const dataUrl = await qrGenerator.createGeneralQR();
-    const { buffer, contentType } = qrGenerator.dataUrlToBuffer(dataUrl);
+      dataUrl = await qrGenerator.createStudentQR(studentId);
 
-    const url = qrGenerator.getUrl();
+      const qrResult = qrGenerator.dataUrlToBuffer(dataUrl);
+      buffer = qrResult.buffer;
+      contentType = qrResult.contentType;
 
-    const qrDoc = {
-      schoolId: schoolId,
-      studentId: studentId,
-      qrCode : {
-        link: url,
-        image: buffer,
-        contentType: contentType
-      },
-      dataType: "newQRCode"
-    };
+      url = qrGenerator.getUrl();
+
+      qrDoc = {
+        schoolId: schoolId,
+        databaseId: databaseId,
+        studentId: studentId,
+        qrCode : {
+          link: url,
+          image: buffer,
+          contentType: contentType
+        },
+        dataType: "newQRCode"
+      };
+    } else {
+      qrGenerator = new QRCodeGenerator({
+        baseUrl: `${domainName}/studentFeeback/`,
+        schoolId,
+        databaseId
+      });
+
+      dataUrl = await qrGenerator.createGeneralQR();
+
+      const qrResult = qrGenerator.dataUrlToBuffer(dataUrl);
+      buffer = qrResult.buffer;
+      contentType = qrResult.contentType;
+
+      url = qrGenerator.getUrl();
+
+      qrDoc = {
+        databaseId: databaseId,
+        schoolId: schoolId,
+        qrCode : {
+          link: url,
+          image: buffer,
+          contentType: contentType
+        },
+        dataType: "newQRCode"
+      };
+    }
 
     sendtoKafka(qrDoc);
-
+    console.log(`content type: ${contentType}, buffer: ${buffer}`);
     res.set({
       "Content-Type": contentType,
       "Content-Disposition": `attachment; filename="school-${schoolId}-qr.png"`,
     });
 
-    res.send(buffer);
+    res.status(201).send(buffer);
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

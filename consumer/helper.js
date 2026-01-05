@@ -23,15 +23,14 @@ const insertSchoolData =  async (data) => {
     const dbName = data.schoolId;
     console.log("Database name (insertSchoolData):", dbName, dbName.length);
     const collections = [
-        {
+        { 
             name: "students",
-            fields: [ 
-                {"name":"studentId","type":"string"},
-                {"name":"studentName","type":"string"},
-                {"name":"db_name","type":"string"},
-                {"name":"isActive","type":"boolean"},
-                {"name":"timestamp","type":"string"}
-            ]
+            fields: [
+                    {"name":"studentName","type":"string"},
+                    {"name":"db_name","type":"string"},
+                    {"name":"isActive","type":"boolean"},
+                    {"name":"timestamp","type":"string"}
+                ]
         },
         {
             name: "teachers",
@@ -199,14 +198,42 @@ const createStudent = async (data) => {
         console.log("THIS IS THE DATA:", dbData);
         delete data.schoolId
 
-        const res = await datacube.dataInsertion(dbID, "students", data);
-        if (res.success) {
-           console.log('Student data inserted successfully in datacube:', res.message);
-           return res 
-        } else {
-            console.error('Error inserting student data:', res.error);
-            return res
+        let collections = [
+        {
+            name: data.studentId,
+            fields: [
+                {"name":"studentName","type":"string"},
+                {"name":"db_name","type":"string"},
+                {"name":"qrInfo","type":"string"},
+                {"name":"isActive","type":"boolean"},
+                {"name":"timestamp","type":"string"}
+            ]
         }
+        ]
+        const collResponse = await datacube.createCollection(dbID, collections);
+        if (collResponse.success) {
+            console.log("Student coll created successfully in datacube:", collResponse.message);
+            const res = await datacube.dataInsertion(dbID, data.studentId, data);
+            const studentRecordRes = await datacube.dataInsertion(dbID, "students", data);
+            if (studentRecordRes.success) {
+                console.log('Student data inserted successfully in datacube (student collection):', studentRecordRes.message);
+            
+            } else {
+                console.error('Error inserting student record (student collection):', studentRecordRes.error);
+              
+            }
+            if (res.success) {
+            console.log('Student data inserted successfully in datacube:', res.message);
+            return res 
+            } else {
+                console.error('Error inserting student data:', res.error);
+                return res
+            }
+        } else{
+            console.error('Error creating student coll:', collResponse.error);
+            return collResponse
+        }
+        
     } else {
         console.error('Error creating student database:', response.error);
         return response
@@ -239,18 +266,12 @@ const getStudentInfo = async (data) => {
 }
 
 const saveQRCode = async (data) => {
-    dbID = data.databaseID
-    studentId = data.studentId
-    // const coll = [
-    //     {
-    //     "name": str(studentId),
-    //     "fields":[
-    //         {"name":"studentName","type":"string"}, 
-    //         {"name":"year","type":"string"},
-    //         {"name":"db_name","type":"string"},
-    //         {"name":"qrCode","type":"string"}
-    //     ]
-    // }]
+    // delete data.qrCode
+    delete data.dataType
+
+    const dbID = data.databaseId
+    const studentId = data.studentId
+    console.log(`DATABASE ID is:${dbID}, studentId is: ${studentId}`);
     const response = await datacube.dataInsertion(dbID, studentId, data);
     if (response.success) {
         console.log('Data inserted successfully in datacube:', response.message);
@@ -265,4 +286,4 @@ const sendScans = async (data) =>{
 
 }
 
-export { JWTDecode, insertSchoolData, createScannerType, createScanner, createStudent };
+export { JWTDecode, insertSchoolData, createScannerType, createScanner, createStudent, saveQRCode };
